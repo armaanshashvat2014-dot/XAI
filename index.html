@@ -2,14 +2,11 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>📚Smartbit AI</title>
+<title>SmartBot AI</title>
 
 <style>
 
-*{
-box-sizing:border-box;
-font-family:Inter,Arial;
-}
+*{box-sizing:border-box;font-family:Arial}
 
 body{
 margin:0;
@@ -19,7 +16,7 @@ display:flex;
 height:100vh;
 }
 
-/* SIDEBAR */
+/* Sidebar */
 
 .sidebar{
 width:260px;
@@ -28,13 +25,6 @@ padding:20px;
 display:flex;
 flex-direction:column;
 gap:15px;
-}
-
-.welcome{
-background:#2f5e4d;
-padding:12px;
-border-radius:8px;
-color:#7dffb0;
 }
 
 .sidebar button{
@@ -46,28 +36,22 @@ color:white;
 cursor:pointer;
 }
 
-.sidebar button:hover{
-background:#3a4055;
-}
-
 .chat-list{
 flex:1;
 overflow:auto;
-margin-top:10px;
 }
 
 .chat-item{
 padding:8px;
 border-radius:6px;
 cursor:pointer;
-margin-bottom:5px;
 }
 
 .chat-item:hover{
 background:#3a4055;
 }
 
-/* MAIN */
+/* Main */
 
 .main{
 flex:1;
@@ -77,7 +61,7 @@ flex-direction:column;
 
 .header{
 text-align:center;
-padding:40px;
+padding:30px;
 }
 
 .logo{
@@ -85,12 +69,6 @@ font-size:40px;
 color:#4bd6ff;
 font-weight:bold;
 }
-
-.subtitle{
-opacity:0.7;
-}
-
-/* CHAT AREA */
 
 .chat{
 flex:1;
@@ -117,8 +95,6 @@ margin-left:auto;
 background:#22273a;
 }
 
-/* INPUT */
-
 .input-area{
 padding:15px;
 display:flex;
@@ -126,7 +102,7 @@ gap:10px;
 border-top:1px solid #333;
 }
 
-.input-area input{
+input{
 flex:1;
 padding:12px;
 border-radius:8px;
@@ -135,12 +111,16 @@ background:#1e2230;
 color:white;
 }
 
-.input-area button{
-padding:12px 20px;
-border:none;
-border-radius:8px;
+button.send{
 background:#4bd6ff;
-cursor:pointer;
+color:black;
+}
+
+.diagram{
+margin-top:10px;
+background:white;
+padding:10px;
+border-radius:8px;
 }
 
 </style>
@@ -149,8 +129,6 @@ cursor:pointer;
 <body>
 
 <div class="sidebar">
-
-<div class="welcome">👋Welcome back!</div>
 
 <button onclick="newChat()">+ New Chat</button>
 
@@ -161,15 +139,14 @@ cursor:pointer;
 <div class="main">
 
 <div class="header">
-<div class="logo">SmartBot</div>
-<div class="subtitle">Your Tutor for all grades!Just type what you want to know about.If waht is a country, type country, or maths, just type the problem, no = symbol.And done!</div>
+<div class="logo">SmartBot, AI tutor.Just type what you want to know about.If what is a country, type country, or in maths, just type the problem, no = symbol.Done!</div>
 </div>
 
 <div class="chat" id="chat"></div>
 
 <div class="input-area">
 <input id="input" placeholder="Ask SmartBot...">
-<button onclick="send()">Send</button>
+<button class="send" onclick="send()">Send</button>
 </div>
 
 </div>
@@ -178,14 +155,14 @@ cursor:pointer;
 
 /* STORAGE */
 
-let chats = JSON.parse(localStorage.getItem("helixChats")) || {}
+let chats = JSON.parse(localStorage.getItem("smartbotChats")) || {}
 let currentChat = null
 
 function save(){
-localStorage.setItem("SmartBotChats",JSON.stringify(chats))
+localStorage.setItem("smartbotChats",JSON.stringify(chats))
 }
 
-/* SIDEBAR */
+/* CHAT LIST */
 
 function renderChats(){
 
@@ -232,7 +209,7 @@ currentChat=id
 renderMessages()
 }
 
-/* RENDER MESSAGES */
+/* RENDER */
 
 function renderMessages(){
 
@@ -245,7 +222,16 @@ chats[currentChat].messages.forEach(m=>{
 
 const div=document.createElement("div")
 div.className="message "+m.role
+
+if(m.diagram){
+
+div.innerHTML=m.text+m.diagram
+
+}else{
+
 div.innerText=m.text
+
+}
 
 chat.appendChild(div)
 
@@ -257,15 +243,16 @@ chat.scrollTop=chat.scrollHeight
 
 /* ADD MESSAGE */
 
-function addMessage(role,text){
+function addMessage(role,text,diagram=null){
 
 chats[currentChat].messages.push({
 role,
-text
+text,
+diagram
 })
 
 if(chats[currentChat].title==="New Chat")
-chats[currentChat].title=text.slice(0,20)
+chats[currentChat].title=text.slice(0,25)
 
 save()
 renderChats()
@@ -273,23 +260,118 @@ renderMessages()
 
 }
 
-/* SIMPLE RESPONSE LOGIC */
+/* MATH SOLVER */
 
-function generateReply(q){
+function solveMath(q){
 
-if(q.toLowerCase().includes("math"))
-return "I can help with math! Ask a problem."
+try{
+const result=eval(q)
+if(!isNaN(result))
+return "🧮 Answer: "+result
+}catch{}
 
-if(q.toLowerCase().includes("science"))
-return "Science question detected. Tell me more."
+return null
 
-return "I'm SmartBot! Ask me anything about your studies."
+}
+
+/* DIAGRAM GENERATOR */
+
+function generateDiagram(q){
+
+q=q.toLowerCase()
+
+if(q.includes("cell")){
+
+return `
+<div class="diagram">
+<svg width="250" height="200">
+<circle cx="120" cy="100" r="80" stroke="black" fill="lightgreen"/>
+<circle cx="120" cy="100" r="30" fill="purple"/>
+<text x="90" y="105" fill="white">Nucleus</text>
+</svg>
+</div>
+`
+
+}
+
+if(q.includes("triangle")){
+
+return `
+<div class="diagram">
+<svg width="250" height="200">
+<polygon points="50,150 200,150 125,40"
+style="fill:lightblue;stroke:black"/>
+</svg>
+</div>
+`
+
+}
+
+if(q.includes("solar system")){
+
+return `
+<div class="diagram">
+<svg width="300" height="200">
+<circle cx="150" cy="100" r="20" fill="orange"/>
+<circle cx="150" cy="100" r="60" fill="none" stroke="white"/>
+<circle cx="210" cy="100" r="6" fill="blue"/>
+</svg>
+</div>
+`
+
+}
+
+return null
+
+}
+
+/* WIKIPEDIA SEARCH */
+
+async function wiki(q){
+
+try{
+
+const url="https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(q)
+
+const res=await fetch(url)
+
+if(res.ok){
+
+const data=await res.json()
+
+if(data.extract)
+return data.extract
+
+}
+
+}catch{}
+
+return null
+
+}
+
+/* SMART RESPONSE */
+
+async function smartReply(q){
+
+const math=solveMath(q)
+if(math) return {text:math}
+
+const diagram=generateDiagram(q)
+if(diagram)
+return {text:"Here is a diagram:",diagram}
+
+const wikiAnswer=await wiki(q)
+if(wikiAnswer)
+return {text:wikiAnswer}
+
+return {text:"I couldn't find a clear answer, but try asking in another way."}
 
 }
 
 /* SEND */
 
-function send(){
+async function send(){
 
 const input=document.getElementById("input")
 const text=input.value.trim()
@@ -300,13 +382,9 @@ addMessage("user",text)
 
 input.value=""
 
-setTimeout(()=>{
+const reply=await smartReply(text)
 
-const reply=generateReply(text)
-
-addMessage("bot",reply)
-
-},500)
+addMessage("bot",reply.text,reply.diagram)
 
 }
 
