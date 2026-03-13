@@ -2,69 +2,144 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SmartBot AI</title>
+<title>📚Smartbit AI</title>
 
 <style>
 
+*{
+box-sizing:border-box;
+font-family:Inter,Arial;
+}
+
 body{
-font-family:Arial;
-background:#0f172a;
-color:white;
 margin:0;
+background:#060c18;
+color:white;
+display:flex;
+height:100vh;
 }
 
-.header{
-padding:20px;
-text-align:center;
-font-size:28px;
-font-weight:bold;
-color:#00d4ff;
-}
+/* SIDEBAR */
 
-.chat{
-height:75vh;
-overflow:auto;
+.sidebar{
+width:260px;
+background:#1e2230;
 padding:20px;
 display:flex;
 flex-direction:column;
-gap:10px;
+gap:15px;
+}
+
+.welcome{
+background:#2f5e4d;
+padding:12px;
+border-radius:8px;
+color:#7dffb0;
+}
+
+.sidebar button{
+padding:12px;
+border:none;
+border-radius:8px;
+background:#2a2f40;
+color:white;
+cursor:pointer;
+}
+
+.sidebar button:hover{
+background:#3a4055;
+}
+
+.chat-list{
+flex:1;
+overflow:auto;
+margin-top:10px;
+}
+
+.chat-item{
+padding:8px;
+border-radius:6px;
+cursor:pointer;
+margin-bottom:5px;
+}
+
+.chat-item:hover{
+background:#3a4055;
+}
+
+/* MAIN */
+
+.main{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+.header{
+text-align:center;
+padding:40px;
+}
+
+.logo{
+font-size:40px;
+color:#4bd6ff;
+font-weight:bold;
+}
+
+.subtitle{
+opacity:0.7;
+}
+
+/* CHAT AREA */
+
+.chat{
+flex:1;
+overflow:auto;
+padding:20px;
+max-width:800px;
+margin:auto;
 }
 
 .message{
-padding:10px;
+padding:12px;
 border-radius:8px;
-max-width:600px;
+margin-bottom:10px;
+max-width:70%;
 }
 
 .user{
-background:#00d4ff;
+background:#4bd6ff;
 color:black;
 margin-left:auto;
 }
 
 .bot{
-background:#1e293b;
+background:#22273a;
 }
 
+/* INPUT */
+
 .input-area{
+padding:15px;
 display:flex;
-padding:10px;
+gap:10px;
 border-top:1px solid #333;
 }
 
-input{
+.input-area input{
 flex:1;
-padding:10px;
-border-radius:6px;
+padding:12px;
+border-radius:8px;
 border:none;
+background:#1e2230;
+color:white;
 }
 
-button{
-padding:10px 15px;
-margin-left:5px;
+.input-area button{
+padding:12px 20px;
 border:none;
-background:#00d4ff;
-border-radius:6px;
+border-radius:8px;
+background:#4bd6ff;
 cursor:pointer;
 }
 
@@ -73,128 +148,184 @@ cursor:pointer;
 
 <body>
 
-<div class="header">💬 SmartBot</div>
+<div class="sidebar">
+
+<div class="welcome">👋Welcome back!</div>
+
+<button onclick="newChat()">+ New Chat</button>
+
+<div class="chat-list" id="chatList"></div>
+
+</div>
+
+<div class="main">
+
+<div class="header">
+<div class="logo">SmartBot</div>
+<div class="subtitle">Your Tutor for all grades!Just type what you want to know about.If waht is a country, type country, or maths, just type the problem, no = symbol.And done!</div>
+</div>
 
 <div class="chat" id="chat"></div>
 
 <div class="input-area">
-<input id="question" placeholder="Ask something...">
-<button onclick="ask()">Send</button>
+<input id="input" placeholder="Ask SmartBot...">
+<button onclick="send()">Send</button>
+</div>
+
 </div>
 
 <script>
 
-const chat = document.getElementById("chat")
+/* STORAGE */
 
-function addMessage(role,text){
+let chats = JSON.parse(localStorage.getItem("helixChats")) || {}
+let currentChat = null
+
+function save(){
+localStorage.setItem("SmartBotChats",JSON.stringify(chats))
+}
+
+/* SIDEBAR */
+
+function renderChats(){
+
+const list=document.getElementById("chatList")
+list.innerHTML=""
+
+Object.keys(chats).forEach(id=>{
 
 const div=document.createElement("div")
-div.className="message "+role
-div.innerText=text
+div.className="chat-item"
+div.innerText=chats[id].title
+
+div.onclick=()=>loadChat(id)
+
+list.appendChild(div)
+
+})
+
+}
+
+/* NEW CHAT */
+
+function newChat(){
+
+const id="chat"+Date.now()
+
+chats[id]={
+title:"New Chat",
+messages:[]
+}
+
+currentChat=id
+
+save()
+renderChats()
+renderMessages()
+
+}
+
+/* LOAD CHAT */
+
+function loadChat(id){
+currentChat=id
+renderMessages()
+}
+
+/* RENDER MESSAGES */
+
+function renderMessages(){
+
+const chat=document.getElementById("chat")
+chat.innerHTML=""
+
+if(!currentChat) return
+
+chats[currentChat].messages.forEach(m=>{
+
+const div=document.createElement("div")
+div.className="message "+m.role
+div.innerText=m.text
 
 chat.appendChild(div)
+
+})
+
 chat.scrollTop=chat.scrollHeight
 
 }
 
-/* math solver */
+/* ADD MESSAGE */
 
-function solveMath(q){
+function addMessage(role,text){
 
-try{
-const result = eval(q)
-if(!isNaN(result)) return "🧮 Math Result: "+result
-}catch{}
+chats[currentChat].messages.push({
+role,
+text
+})
 
-return null
+if(chats[currentChat].title==="New Chat")
+chats[currentChat].title=text.slice(0,20)
 
-}
-
-/* wikipedia search */
-
-async function wikiSearch(q){
-
-try{
-
-const url="https://en.wikipedia.org/api/rest_v1/page/summary/"+encodeURIComponent(q)
-
-const res=await fetch(url)
-
-if(res.ok){
-const data=await res.json()
-if(data.extract) return data.extract
-}
-
-}catch{}
-
-return null
+save()
+renderChats()
+renderMessages()
 
 }
 
-/* web search */
+/* SIMPLE RESPONSE LOGIC */
 
-async function webSearch(q){
+function generateReply(q){
 
-try{
+if(q.toLowerCase().includes("math"))
+return "I can help with math! Ask a problem."
 
-const url="https://api.duckduckgo.com/?q="+encodeURIComponent(q)+"&format=json"
+if(q.toLowerCase().includes("science"))
+return "Science question detected. Tell me more."
 
-const res=await fetch(url)
-const data=await res.json()
-
-if(data.Abstract) return data.Abstract
-
-}catch{}
-
-return null
+return "I'm SmartBot! Ask me anything about your studies."
 
 }
 
-/* main logic */
+/* SEND */
 
-async function ask(){
+function send(){
 
-const input=document.getElementById("question")
-const q=input.value.trim()
+const input=document.getElementById("input")
+const text=input.value.trim()
 
-if(!q) return
+if(!text) return
 
-addMessage("user",q)
+addMessage("user",text)
 
 input.value=""
 
-addMessage("bot","Thinking...")
+setTimeout(()=>{
 
-/* math */
+const reply=generateReply(text)
 
-let answer = solveMath(q)
+addMessage("bot",reply)
 
-/* wiki */
-
-if(!answer)
-answer = await wikiSearch(q)
-
-/* web */
-
-if(!answer)
-answer = await webSearch(q)
-
-if(!answer)
-answer = "Sorry, I couldn't find an answer."
-
-chat.lastChild.remove()
-
-addMessage("bot",answer)
+},500)
 
 }
 
-/* enter key */
+/* ENTER KEY */
 
-document.getElementById("question").addEventListener("keypress",function(e){
+document.getElementById("input").addEventListener("keypress",function(e){
 
-if(e.key==="Enter") ask()
+if(e.key==="Enter") send()
 
 })
+
+/* INIT */
+
+renderChats()
+
+if(Object.keys(chats).length===0)
+newChat()
+else
+loadChat(Object.keys(chats)[0])
 
 </script>
 
