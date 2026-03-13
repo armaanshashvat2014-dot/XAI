@@ -83,6 +83,7 @@ padding:12px;
 border-radius:8px;
 margin-bottom:10px;
 max-width:70%;
+white-space:pre-line;
 }
 
 .user{
@@ -224,13 +225,9 @@ const div=document.createElement("div")
 div.className="message "+m.role
 
 if(m.diagram){
-
 div.innerHTML=m.text+m.diagram
-
 }else{
-
 div.innerText=m.text
-
 }
 
 chat.appendChild(div)
@@ -354,18 +351,60 @@ return null
 
 async function smartReply(q){
 
+q=q.trim()
+
+/* MATH WITH EXPLANATION */
+
 const math=solveMath(q)
-if(math) return {text:math}
+
+if(math){
+return {
+text:math+"\n\nExplanation: The expression was calculated using standard arithmetic rules."
+}
+}
+
+/* QUIZ GENERATOR */
+
+if(q.toLowerCase().includes("quiz") || q.toLowerCase().includes("question")){
+
+return {
+text:
+"🧠 Try this question:\n\nWhat is the capital of Australia?\n\nA) Sydney\nB) Melbourne\nC) Canberra\n\nAnswer: Canberra"
+}
+
+}
+
+/* DIAGRAM */
 
 const diagram=generateDiagram(q)
-if(diagram)
-return {text:"Here is a diagram:",diagram}
+
+if(diagram){
+return {
+text:"Here is a diagram to help understand:",
+diagram
+}
+}
+
+/* WIKIPEDIA SMART SUMMARY */
 
 const wikiAnswer=await wiki(q)
-if(wikiAnswer)
-return {text:wikiAnswer}
 
-return {text:"I couldn't find a clear answer, but try asking in another way."}
+if(wikiAnswer){
+
+let summary=wikiAnswer.split(". ").slice(0,3).join(". ")+"."
+
+return {
+text:"📚 Explanation:\n\n"+summary+"\n\nAsk if you want more details."
+}
+
+}
+
+/* FALLBACK */
+
+return {
+text:
+"I couldn't find a clear answer.\n\nTry asking:\n• a math problem\n• a science topic\n• 'generate a quiz question'\n• or ask for a diagram."
+}
 
 }
 
