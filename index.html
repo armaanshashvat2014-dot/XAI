@@ -2,7 +2,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SmartBot AI</title>
+<title>SmartBot</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
 
 <style>
 
@@ -16,24 +18,13 @@ display:flex;
 height:100vh;
 }
 
-/* Sidebar */
-
 .sidebar{
 width:260px;
 background:#1e2230;
 padding:20px;
 display:flex;
 flex-direction:column;
-gap:15px;
-}
-
-.sidebar button{
-padding:12px;
-border:none;
-border-radius:8px;
-background:#2a2f40;
-color:white;
-cursor:pointer;
+gap:10px;
 }
 
 .chat-list{
@@ -43,15 +34,13 @@ overflow:auto;
 
 .chat-item{
 padding:8px;
-border-radius:6px;
 cursor:pointer;
+border-radius:6px;
 }
 
 .chat-item:hover{
 background:#3a4055;
 }
-
-/* Main */
 
 .main{
 flex:1;
@@ -61,20 +50,16 @@ flex-direction:column;
 
 .header{
 text-align:center;
-padding:30px;
-}
-
-.logo{
-font-size:40px;
+padding:20px;
+font-size:32px;
 color:#4bd6ff;
-font-weight:bold;
 }
 
 .chat{
 flex:1;
 overflow:auto;
 padding:20px;
-max-width:800px;
+max-width:900px;
 margin:auto;
 }
 
@@ -83,7 +68,6 @@ padding:12px;
 border-radius:8px;
 margin-bottom:10px;
 max-width:70%;
-white-space:pre-line;
 }
 
 .user{
@@ -97,9 +81,9 @@ background:#22273a;
 }
 
 .input-area{
-padding:15px;
 display:flex;
 gap:10px;
+padding:15px;
 border-top:1px solid #333;
 }
 
@@ -112,15 +96,18 @@ background:#1e2230;
 color:white;
 }
 
-button.send{
+button{
+padding:10px 16px;
+border:none;
+border-radius:8px;
 background:#4bd6ff;
-color:black;
+cursor:pointer;
 }
 
 .diagram{
-margin-top:10px;
 background:white;
 padding:10px;
+margin-top:10px;
 border-radius:8px;
 }
 
@@ -139,15 +126,13 @@ border-radius:8px;
 
 <div class="main">
 
-<div class="header">
-<div class="logo">SmartBot, AI tutor.Just type what you want to know about.If what is a country, type country, or in maths, just type the problem, no = symbol.Done!</div>
-</div>
+<div class="header">SmartBot</div>
 
 <div class="chat" id="chat"></div>
 
 <div class="input-area">
 <input id="input" placeholder="Ask SmartBot...">
-<button class="send" onclick="send()">Send</button>
+<button onclick="send()">Send</button>
 </div>
 
 </div>
@@ -175,7 +160,6 @@ Object.keys(chats).forEach(id=>{
 const div=document.createElement("div")
 div.className="chat-item"
 div.innerText=chats[id].title
-
 div.onclick=()=>loadChat(id)
 
 list.appendChild(div)
@@ -184,7 +168,7 @@ list.appendChild(div)
 
 }
 
-/* NEW CHAT */
+/* CHAT FUNCTIONS */
 
 function newChat(){
 
@@ -203,14 +187,10 @@ renderMessages()
 
 }
 
-/* LOAD CHAT */
-
 function loadChat(id){
 currentChat=id
 renderMessages()
 }
-
-/* RENDER */
 
 function renderMessages(){
 
@@ -224,11 +204,10 @@ chats[currentChat].messages.forEach(m=>{
 const div=document.createElement("div")
 div.className="message "+m.role
 
-if(m.diagram){
+if(m.diagram)
 div.innerHTML=m.text+m.diagram
-}else{
+else
 div.innerText=m.text
-}
 
 chat.appendChild(div)
 
@@ -237,8 +216,6 @@ chat.appendChild(div)
 chat.scrollTop=chat.scrollHeight
 
 }
-
-/* ADD MESSAGE */
 
 function addMessage(role,text,diagram=null){
 
@@ -262,67 +239,18 @@ renderMessages()
 function solveMath(q){
 
 try{
-const result=eval(q)
-if(!isNaN(result))
-return "🧮 Answer: "+result
-}catch{}
 
+const result = math.evaluate(q)
+
+return "🧮 Result: " + result
+
+}catch{
 return null
+}
 
 }
 
-/* DIAGRAM GENERATOR */
-
-function generateDiagram(q){
-
-q=q.toLowerCase()
-
-if(q.includes("cell")){
-
-return `
-<div class="diagram">
-<svg width="250" height="200">
-<circle cx="120" cy="100" r="80" stroke="black" fill="lightgreen"/>
-<circle cx="120" cy="100" r="30" fill="purple"/>
-<text x="90" y="105" fill="white">Nucleus</text>
-</svg>
-</div>
-`
-
-}
-
-if(q.includes("triangle")){
-
-return `
-<div class="diagram">
-<svg width="250" height="200">
-<polygon points="50,150 200,150 125,40"
-style="fill:lightblue;stroke:black"/>
-</svg>
-</div>
-`
-
-}
-
-if(q.includes("solar system")){
-
-return `
-<div class="diagram">
-<svg width="300" height="200">
-<circle cx="150" cy="100" r="20" fill="orange"/>
-<circle cx="150" cy="100" r="60" fill="none" stroke="white"/>
-<circle cx="210" cy="100" r="6" fill="blue"/>
-</svg>
-</div>
-`
-
-}
-
-return null
-
-}
-
-/* WIKIPEDIA SEARCH */
+/* WIKIPEDIA */
 
 async function wiki(q){
 
@@ -347,64 +275,70 @@ return null
 
 }
 
+/* DIAGRAM GENERATOR */
+
+function generateDiagram(q){
+
+q=q.toLowerCase()
+
+if(q.includes("triangle")){
+
+return `
+<div class="diagram">
+<svg width="250" height="200">
+<polygon points="50,150 200,150 125,40"
+style="fill:lightblue;stroke:black"/>
+</svg>
+</div>
+`
+
+}
+
+if(q.includes("circle")){
+
+return `
+<div class="diagram">
+<svg width="250" height="200">
+<circle cx="120" cy="100" r="80"
+stroke="black" fill="lightgreen"/>
+</svg>
+</div>
+`
+
+}
+
+if(q.includes("cell")){
+
+return `
+<div class="diagram">
+<svg width="250" height="200">
+<circle cx="120" cy="100" r="80" fill="lightgreen"/>
+<circle cx="120" cy="100" r="30" fill="purple"/>
+<text x="95" y="105" fill="white">Nucleus</text>
+</svg>
+</div>
+`
+
+}
+
+return null
+
+}
+
 /* SMART RESPONSE */
 
 async function smartReply(q){
 
-q=q.trim()
-
-/* MATH WITH EXPLANATION */
-
 const math=solveMath(q)
-
-if(math){
-return {
-text:math+"\n\nExplanation: The expression was calculated using standard arithmetic rules."
-}
-}
-
-/* QUIZ GENERATOR */
-
-if(q.toLowerCase().includes("quiz") || q.toLowerCase().includes("question")){
-
-return {
-text:
-"🧠 Try this question:\n\nWhat is the capital of Australia?\n\nA) Sydney\nB) Melbourne\nC) Canberra\n\nAnswer: Canberra"
-}
-
-}
-
-/* DIAGRAM */
+if(math) return {text:math}
 
 const diagram=generateDiagram(q)
-
-if(diagram){
-return {
-text:"Here is a diagram to help understand:",
-diagram
-}
-}
-
-/* WIKIPEDIA SMART SUMMARY */
+if(diagram) return {text:"Generated diagram:",diagram}
 
 const wikiAnswer=await wiki(q)
+if(wikiAnswer) return {text:wikiAnswer}
 
-if(wikiAnswer){
-
-let summary=wikiAnswer.split(". ").slice(0,3).join(". ")+"."
-
-return {
-text:"📚 Explanation:\n\n"+summary+"\n\nAsk if you want more details."
-}
-
-}
-
-/* FALLBACK */
-
-return {
-text:
-"I couldn't find a clear answer.\n\nTry asking:\n• a math problem\n• a science topic\n• 'generate a quiz question'\n• or ask for a diagram."
-}
+return {text:"I couldn't find a clear answer."}
 
 }
 
